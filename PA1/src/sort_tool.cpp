@@ -62,7 +62,7 @@ int SortTool::RandomizedPartition(vector<int>& data, int low, int high){
     std::mt19937 gen(rd()); // 使用 Mersenne Twister 19937 生成器
     std::uniform_int_distribution<> dis(low, high); // 均匀分布 low~high it is cloth regin 
     int random_num = dis(gen);
-    
+
     //print low:0 random~ :740 high:999 
     // std::cout<<"low:"<<low;
     // std::cout<<"   random~ :"<<random_num;
@@ -100,14 +100,48 @@ void SortTool::MergeSort(vector<int>& data){
 void SortTool::MergeSortSubVector(vector<int>& data, int low, int high) {
     // Function : Merge sort subvector
     // TODO : Please complete MergeSortSubVector code here
-    // Hint : recursively call itself
-    //        Merge function is needed
+    if(low<high){
+        int middle1 = (low+high)/2;
+        int middle2 = middle1+1;
+        MergeSortSubVector(data,low,middle1);
+        MergeSortSubVector(data,middle2,high);
+        Merge(data,low,middle1,middle2,high);
+    }  
 }
 
 // Merge
 void SortTool::Merge(vector<int>& data, int low, int middle1, int middle2, int high) {
     // Function : Merge two sorted subvector
     // TODO : Please complete the function
+    //temp_size
+    int L_size = middle1-low+1;
+    int R_size = high-middle2+1;
+    //creat temp
+    vector<int> L_temp(L_size+1); // last one is inf
+    vector<int> R_temp(R_size+1); // last one is inf
+    //copy to temp
+    for (int i=0;i<=L_size-1;i++){
+        L_temp[i]=data[low+i]; //from low begain to middle1
+    }
+    for (int i=0;i<=R_size-1;i++){
+        R_temp[i]=data[middle2+i]; //from middle2 begain to high
+    }
+    //set last element to infinity
+    L_temp[L_size] = 9999999;
+    R_temp[R_size] = 9999999;
+    //merg~
+    int L_i=0; //L index
+    int R_i=0; //R index
+    for (int data_i=low;data_i<=high;data_i++){ //data index from low to high
+        if(L_temp[L_i]<=R_temp[R_i]){
+            data[data_i]=L_temp[L_i];
+            L_i++;
+        }
+        else{
+            data[data_i]=R_temp[R_i];
+            R_i++;
+        }
+    }
 }
 
 // Heap sort method
