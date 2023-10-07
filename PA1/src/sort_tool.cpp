@@ -161,6 +161,22 @@ void SortTool::HeapSort(vector<int>& data) {
 void SortTool::MaxHeapify(vector<int>& data, int root) {
     // Function : Make tree with given root be a max-heap if both right and left sub-tree are max-heap
     // TODO : Please complete max-heapify code here
+    int left_index = 2*root+1;
+    int right_index = 2*root+2;
+    int largest_index = root;
+    // if left is bigger
+    if (left_index<=heapSize-1 && data[left_index]>data[largest_index]){
+        largest_index = left_index;
+    }
+    // if right is even biger
+    if (right_index<=heapSize-1 && data[right_index]>data[largest_index]){
+        largest_index = right_index;
+    }
+    //if left or right any of them biger than root
+    if(largest_index != root){
+        swap(data[root],data[largest_index]);
+        MaxHeapify(data,largest_index);
+    }
 }
 
 //Build max heap
@@ -168,4 +184,7 @@ void SortTool::BuildMaxHeap(vector<int>& data) {
     heapSize = data.size(); // initialize heap size
     // Function : Make input data become a max-heap
     // TODO : Please complete BuildMaxHeap code here
+    for(int root_i = (heapSize/2)-1; root_i>=0; root_i--){ // root_index from size/2 down to 0
+        MaxHeapify(data,root_i);
+    }
 }
