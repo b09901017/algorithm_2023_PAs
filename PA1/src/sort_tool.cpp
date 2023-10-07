@@ -8,6 +8,7 @@
 
 #include "sort_tool.h"
 #include<iostream>
+#include <random> //for real random
 #define ll long long 
 // Constructor
 SortTool::SortTool() {}
@@ -40,19 +41,54 @@ void SortTool::QuickSort(vector<int>& data, int f){
 void SortTool::QuickSortSubVector(vector<int>& data, int low, int high, const int flag) {
     // Function : Quick sort subvector
     // TODO : Please complete QuickSortSubVector code here
-    // Hint : recursively call itself
-    //        Partition function is needed
-    // flag == 0 -> normal QS
-    // flag == 1 -> randomized QS
+    if(low<high){
+        int priv_index;
+        if(flag == 0){
+            priv_index = Partition(data,low,high);
+        }
+        else{
+            priv_index = RandomizedPartition(data,low,high);
+        }
+        QuickSortSubVector(data,low,priv_index-1,flag);
+        QuickSortSubVector(data,priv_index+1,high,flag);
+    }
 }
+    
+
 int SortTool::RandomizedPartition(vector<int>& data, int low, int high){
     // Function : RQS's Partition the vector 
     // TODO : Please complete the function
+    std::random_device rd;  // 用于获取真随机数
+    std::mt19937 gen(rd()); // 使用 Mersenne Twister 19937 生成器
+    std::uniform_int_distribution<> dis(low, high); // 均匀分布 low~high it is cloth regin 
+    int random_num = dis(gen);
+    
+    //print low:0 random~ :740 high:999 
+    // std::cout<<"low:"<<low;
+    // std::cout<<"   random~ :"<<random_num;
+    // std::cout<<"  high:"<<high<<std::endl;
+    //print low:0 random~ :31 high:902 
+
+    swap(data[random_num],data[high]);
+    return Partition(data,low,high);
 }
 
 int SortTool::Partition(vector<int>& data, int low, int high) {
     // Function : Partition the vector 
     // TODO : Please complete the function
+    int priot = data[high]; //last one for mark
+    int i = low-1; //indexfor change -1 for later +1
+
+    for (int j = low; j<=high-1; j++){ //j from begin to one before priot
+        //swap little one forward
+        if (data[j]<=priot){
+            i++ ;// insert place +1
+            std::swap(data[i],data[j]);
+        }
+    }
+
+    std::swap(data[i+1],data[high]); //insert privot back
+    return i+1 ; //return privot index +1
 }
 
 // Merge sort method

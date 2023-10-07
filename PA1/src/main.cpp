@@ -7,6 +7,8 @@
 //  ./NTU_sort -IS 1000.case2.in output
 //  in PA1 ~ type make and type ./bin/NTU_sort -IS inputs/1000.case2.in output
 //  ./bin/NTU_sort -IS inputs/1000.case2.in outputs/1000.case2.out
+
+//  check type ./utility/PA1_Result_Checker inputs/1000.case1.in outputs/1000.case1_QS.out
 // **************************************************************************
 
 #include <cstring>
