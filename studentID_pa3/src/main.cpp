@@ -184,6 +184,18 @@ int main(int argc, char* argv[])
 
     // ************** read the input ********************
     fstream fin(argv[1]);
+    // // 檢查文件是否成功打開
+    // if (!fin) {
+    //     std::cerr << "無法打開文件" << std::endl;
+    //     return 1;
+    // }
+
+    // // 檢查文件是否為空
+    // fin.seekg(0, std::ios::end);
+    // if (fin.tellg() == 0) {
+    //     std::cerr << "文件是空的" << std::endl;
+    //     return 1;
+    // }
     fin>>type;
     fin>>n_numof_vertax;
     fin>>m_numof_edge;
@@ -218,6 +230,9 @@ int main(int argc, char* argv[])
     }
     else if(type=='d'){
         d_print_removed_edge_for_directed_graph(edges, adj, n_numof_vertax, m_numof_edge);
+    }
+    else{
+        cout<< " Neither 'u' or 'd' "<<endl;
     }
     
     // ************** MAIN Function Depart "u" and "d" ********************
