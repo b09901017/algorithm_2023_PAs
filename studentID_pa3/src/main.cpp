@@ -21,6 +21,7 @@ struct edge
     int weight;
 };
 vector <edge> edges;
+vector<bool> visited;
 //output varible
 int removed_weight_sum = 0;
 vector <edge> removed_edges;
@@ -103,71 +104,63 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
 
 
 // ************** 1. remove edge one by one (greddyly) 2. check if that is OK ? 3. if ok than store in out put if not than put it back********************
-// input is (the edge you try to remove , remaining edges (after all the previous removal), renewed adjson list (after all the previous removal)  )
-bool check_the_consequence_of_edge_removal(int root, vector<int> adj[], int n_numof_vertax){
-    // ************** visited[] initialize  ********************
-    bool visited[n_numof_vertax];
-    for(int i=0; i<n_numof_vertax; i++){
-        visited[i] = false;
-    }
-    // ************** visited[] initialize  ********************
-    queue<int> Q;
-    Q.push(root);
-    visited[root] = true;
-    int numof_visited_vertex = 1;
-    while(!Q.empty())
-    {
-        int node = Q.front(); // Dequeue 
-        cout<<node<<endl;
-        Q.pop(); // Dequeue 
-        for(int v : adj[node]) {
-            if(!visited[v]){// not visited
-              Q.push(v);    // push into queue
-              visited[v] = true;   //marked visited
-              numof_visited_vertex ++;
-            } 
+void DFS_visit(int node, vector<int> adj[], int root, bool& loop_back_to_this_root){
+    visited[node] = true;
+//     for (bool v : visited) {
+//     std::cout << (v ? "true" : "false") << " ";
+// }
+// std::cout << std::endl;
+
+    for(int v : adj[node]){
+        if (v==root) {
+            loop_back_to_this_root = true;
+            //cout<<"loop_back_to_this_root is true" << endl; 
+            return;
+        }
+        if(!visited[v]){ // if this nigber is not vised 
+            //visited[v] = true;
+            cout<<"visit : "<< v <<endl;
+            DFS_visit(v, adj, root, loop_back_to_this_root);
         }
     }
+}
+    // only those who pass the u_remove function is possible for d_remove
+void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> adj[], int n_numof_vertax, int m_numof_edge){
+    // use u_remove function to get posible canidate =>removed_edges
+    use_Kruskal_u_maxST_to_print_remove(edges, n_numof_vertax, m_numof_edge);
+    // for(const auto& edge : removed_edges) {
+    // cout << "Remove Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << endl;
+    // } 
 
-    bool if_all_vertex_is_visited = (numof_visited_vertex == n_numof_vertax); // can~~~~improve ~~~~
+    //use DFS to check if this edge will cause a loop (use this edge to loop back to itself(edge.v_start) not DFS has a loop)
     
-
-    return if_all_vertex_is_visited;
-}
-
-void remove_edge(edge edge, vector<int> adj[]){
-    adj[edge.v_start].erase(remove(adj[edge.v_start].begin(), adj[edge.v_start].end(), edge.v_end), adj[edge.v_start].end());
-    cout << "remove Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << endl;
-}
-
-void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> adj[], int n_numof_vertax){
-
-    // STEP 1 ************** sort the input (for greddy remove) ********************
-    sort(edges.begin(), edges.end(), [](const edge& a, const edge& b) {
-        return a.weight < b.weight;  // lightest fist
-    });
-    // ************** sort the input (for greddy remove) ********************
-
-    // STEP 2 ************** check every edge if it is ok to be removed ********************
-    for(const auto& edge : edges) { //from weight low to big
-
-        // STEP 2_1 try remove this edge see if it is ok   移除 adj[edge_v_start] 中的 edge_v_end
-        // for example移除 adj[1] 中的 3 adj[1].erase(std::remove(adj[1].begin(), adj[1].end(), 3), adj[1].end());
-        remove_edge(edge, adj);
-
-        // STEP 2_2 input is (where to start the BFS , adjson list (after all the previous removal) ...) 
-        bool if_it_is_ok = check_the_consequence_of_edge_removal(edge.v_end, adj, n_numof_vertax);
-        if(if_it_is_ok){ // than put this edge to output
-            removed_edges.push_back({edge.v_start,edge.v_end,edge.weight});
-            removed_weight_sum += edge.weight;
+    for (const auto& candidate_edge : removed_edges){
+        //initialize visited
+        visited.resize(n_numof_vertax);
+        for (int i = 0; i < visited.size(); ++i) {
+            visited[i] = false;
         }
-        else{ // than add this edge back 
-            adj[edge.v_start].push_back(edge.v_end);
-            cout << "add back Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << endl;
+        //initialize visited
+
+        // from edge.v_start start to DFS
+        int root = candidate_edge.v_start;
+        // if from edge.v_start start to DFS and loop_back_to_this_root than this edge remain in output
+        bool loop_back_to_this_root = false;
+        DFS_visit(root, adj, root, loop_back_to_this_root);
+
+        if(!loop_back_to_this_root){
+            removed_weight_sum -= candidate_edge.weight;
+          // remove this candidate edge from removed edge
+            auto it = remove_if(removed_edges.begin(), removed_edges.end(), 
+                                [&candidate_edge](const edge& e) {
+                                    return e.v_start == candidate_edge.v_start && e.v_end == candidate_edge.v_end;
+                                });
+
+            removed_edges.erase(it, removed_edges.end());
         }
+
 
     }
-    // ************** check every edge if it is ok to be removed ********************
 
 }
 
@@ -225,13 +218,24 @@ int main(int argc, char* argv[])
     // }
     // ************** check the read ********************
     
+    // ************** MAIN Function Depart "u" and "d" ********************
+    if (type=='u'){
+        use_Kruskal_u_maxST_to_print_remove (edges, n_numof_vertax, m_numof_edge);
+    }
+    else if(type=='d'){
+        d_print_removed_edge_for_directed_graph(edges, adj, n_numof_vertax, m_numof_edge);
+    }
+    
+    // ************** MAIN Function Depart "u" and "d" ********************
+
 
     //use_Kruskal_u_maxST_to_print_remove (edges, n_numof_vertax, m_numof_edge);
-    d_print_removed_edge_for_directed_graph(edges, adj, n_numof_vertax);
-    cout << "Remove_Weight_Sum " << removed_weight_sum << endl;   
+    //d_print_removed_edge_for_directed_graph(edges, adj, n_numof_vertax, m_numof_edge);
+     
 
 
     // ************** output~~~~~~ ********************
+    cout << "Remove_Weight_Sum " << removed_weight_sum << endl;  
     fstream fout;
     fout.open(argv[2],ios::out);
     fout << removed_weight_sum << endl;
