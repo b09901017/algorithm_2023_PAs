@@ -106,20 +106,14 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
 // ************** 1. remove edge one by one (greddyly) 2. check if that is OK ? 3. if ok than store in out put if not than put it back********************
 void DFS_visit(int node, vector<int> adj[], int root, bool& loop_back_to_this_root){
     visited[node] = true;
-//     for (bool v : visited) {
-//     std::cout << (v ? "true" : "false") << " ";
-// }
-// std::cout << std::endl;
 
     for(int v : adj[node]){
         if (v==root) {
             loop_back_to_this_root = true;
-            //cout<<"loop_back_to_this_root is true" << endl; 
             return;
         }
         if(!visited[v]){ // if this nigber is not vised 
-            //visited[v] = true;
-            cout<<"visit : "<< v <<endl;
+            //cout<<"visit : "<< v <<endl;
             DFS_visit(v, adj, root, loop_back_to_this_root);
         }
     }
