@@ -7,6 +7,7 @@
 #include <map>
 #include <array>
 #include <list>
+#include <queue>
 using namespace std;
 
 // ************** define input variable ********************
@@ -101,6 +102,78 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
 // ************** use kru alg to find maximum spand tree (edges without chosen will be remove) ********************
 
 
+// ************** 1. remove edge one by one (greddyly) 2. check if that is OK ? 3. if ok than store in out put if not than put it back********************
+// input is (the edge you try to remove , remaining edges (after all the previous removal), renewed adjson list (after all the previous removal)  )
+bool check_the_consequence_of_edge_removal(int root, vector<int> adj[], int n_numof_vertax){
+    // ************** visited[] initialize  ********************
+    bool visited[n_numof_vertax];
+    for(int i=0; i<n_numof_vertax; i++){
+        visited[i] = false;
+    }
+    // ************** visited[] initialize  ********************
+    queue<int> Q;
+    Q.push(root);
+    visited[root] = true;
+    int numof_visited_vertex = 1;
+    while(!Q.empty())
+    {
+        int node = Q.front(); // Dequeue 
+        cout<<node<<endl;
+        Q.pop(); // Dequeue 
+        for(int v : adj[node]) {
+            if(!visited[v]){// not visited
+              Q.push(v);    // push into queue
+              visited[v] = true;   //marked visited
+              numof_visited_vertex ++;
+            } 
+        }
+    }
+
+    bool if_all_vertex_is_visited = (numof_visited_vertex == n_numof_vertax); // can~~~~improve ~~~~
+    
+
+    return if_all_vertex_is_visited;
+}
+
+void remove_edge(edge edge, vector<int> adj[]){
+    adj[edge.v_start].erase(remove(adj[edge.v_start].begin(), adj[edge.v_start].end(), edge.v_end), adj[edge.v_start].end());
+    cout << "remove Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << endl;
+}
+
+void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> adj[], int n_numof_vertax){
+
+    // STEP 1 ************** sort the input (for greddy remove) ********************
+    sort(edges.begin(), edges.end(), [](const edge& a, const edge& b) {
+        return a.weight < b.weight;  // lightest fist
+    });
+    // ************** sort the input (for greddy remove) ********************
+
+    // STEP 2 ************** check every edge if it is ok to be removed ********************
+    for(const auto& edge : edges) { //from weight low to big
+
+        // STEP 2_1 try remove this edge see if it is ok   移除 adj[edge_v_start] 中的 edge_v_end
+        // for example移除 adj[1] 中的 3 adj[1].erase(std::remove(adj[1].begin(), adj[1].end(), 3), adj[1].end());
+        remove_edge(edge, adj);
+
+        // STEP 2_2 input is (where to start the BFS , adjson list (after all the previous removal) ...) 
+        bool if_it_is_ok = check_the_consequence_of_edge_removal(edge.v_end, adj, n_numof_vertax);
+        if(if_it_is_ok){ // than put this edge to output
+            removed_edges.push_back({edge.v_start,edge.v_end,edge.weight});
+            removed_weight_sum += edge.weight;
+        }
+        else{ // than add this edge back 
+            adj[edge.v_start].push_back(edge.v_end);
+            cout << "add back Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << endl;
+        }
+
+    }
+    // ************** check every edge if it is ok to be removed ********************
+
+}
+
+// ************** 1. remove edge one by one (greddyly) 2. check if that is OK ? 3. if ok than store in out put if not than put it back********************
+
+
 
 // ************** help message ********************
 void help_message() {
@@ -127,9 +200,11 @@ int main(int argc, char* argv[])
     fin>>type;
     fin>>n_numof_vertax;
     fin>>m_numof_edge;
+    vector <int> adj[n_numof_vertax];  // store nigbers 10/29
     int v_s, v_e, w ; 
     while (fin >> v_s >> v_e >> w){
         edges.push_back({v_s,v_e,w}); 
+        adj[v_s].push_back(v_e); //v_end is the nigber of v_start 10/29
     }
     // ************** read the input ********************
 
@@ -140,10 +215,19 @@ int main(int argc, char* argv[])
     // for(const auto& edge : edges) {
     // cout << "Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << endl;
     // }
+    // for (int i = 0; i < n_numof_vertax; ++i) { //check the adj list
+    //     cout << "v" << (i+1) << " : ";
+    //     for (size_t j = 0; j < adj[i].size(); ++j) {
+    //         if (j > 0) cout << ",";
+    //             cout << adj[i][j];
+    //     }
+    //     cout << endl;
+    // }
     // ************** check the read ********************
     
 
-    use_Kruskal_u_maxST_to_print_remove (edges, n_numof_vertax, m_numof_edge);
+    //use_Kruskal_u_maxST_to_print_remove (edges, n_numof_vertax, m_numof_edge);
+    d_print_removed_edge_for_directed_graph(edges, adj, n_numof_vertax);
     cout << "Remove_Weight_Sum " << removed_weight_sum << endl;   
 
 
