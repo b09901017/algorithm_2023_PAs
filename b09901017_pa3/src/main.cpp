@@ -108,30 +108,60 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
 
 
 // ************** 1. remove edge one by one (greddyly) 2. check if that is OK ? 3. if ok than store in out put if not than put it back********************
-void DFS_visit(int node, vector<int> adj[], int root){
-    visited[node] = true;
+// void DFS_visit(int node, vector<int> adj[], int root){
+//     visited[node] = true;
 
-    for(int v : adj[node]){
-        // debug
-        // cout<<"vertex : " <<node<<"'s nigber are : ";
-        // for(int v : adj[node]){
-        //     cout<<v<<", ";
-        // }
-        // cout<<endl;
-        // debug
+//     for(int v : adj[node]){
+//         // debug
+//         // cout<<"vertex : " <<node<<"'s nigber are : ";
+//         // for(int v : adj[node]){
+//         //     cout<<v<<", ";
+//         // }
+//         // cout<<endl;
+//         // debug
         
-        if(!visited[v]){ // if this nigber is not vised 
-            //cout<<"visit : "<< v <<endl;
-            DFS_visit(v, adj, root);
-        }
-        if (v==root) {
-                loop_back_to_this_root = true;
-                //cout<<"start being true ~~ "<<loop_back_to_this_root<<endl;
-                return;
+//         if(!visited[v]){ // if this nigber is not vised 
+//             //cout<<"visit : "<< v <<endl;
+//             DFS_visit(v, adj, root);
+//         }
+//         if (v==root) {
+//                 loop_back_to_this_root = true;
+//                 //cout<<"start being true ~~ "<<loop_back_to_this_root<<endl;
+
+//                 return;
+//             }
+//     }
+//     //cout<<"check point~~ "<<root<<endl;
+// }
+
+bool BFS(int s, int n, vector<int> adj[])
+{
+    bool visited[n]; //number of vertices,colored or not
+    for (int i = 0; i < n; i++)
+        visited[i] = false; //initialize
+    queue<int> Q;
+    visited[s] = true;
+    Q.push(s);
+    while (!Q.empty())
+    {
+        int u = Q.front();
+        Q.pop();
+        for (int i = 0; i < adj[u].size(); i++)
+        {
+            if (visited[adj[u][i]])
+            {
+                return true;
             }
+            else
+            {
+                visited[adj[u][i]] = true;
+                Q.push(adj[u][i]);
+            }
+        }
     }
-    //cout<<"check point~~ "<<root<<endl;
+    return false;
 }
+
     // only those who pass the u_remove function is possible for d_remove
 void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> adj[], int n_numof_vertax, int m_numof_edge){
     // use u_remove function to get posible canidate =>removed_edges
@@ -140,38 +170,71 @@ void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> a
     // cout << "Remove Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << endl;
     // } 
 
-    //use DFS to check if this edge will cause a loop (use this edge to loop back to itself(edge.v_start) not DFS has a loop)
-    
-    for (const auto& candidate_edge : removed_edges){
-        //cout<<"candidate edge change "<<endl;
-        //cout<<"if last edge loop back to it self"<<loop_back_to_this_root<<endl;
-        //initialize visited
-        visited.resize(n_numof_vertax);
-        for (int i = 0; i < visited.size(); i++) {
-            visited[i] = false;
-        }
-        //initialize visited
 
-        // from edge.v_start start to DFS
-        int root = candidate_edge.v_start;
-        // if from edge.v_start start to DFS and loop_back_to_this_root than this edge remain in output
-        loop_back_to_this_root = false;
-        //cout<<"become  flase ~~ "<<loop_back_to_this_root<<endl;
-        DFS_visit(root, adj, root);
-        //cout<<"where you go in to if "<<loop_back_to_this_root<<endl;
-        if(!loop_back_to_this_root){ 
-            cout<<"this edge doesnt metter from"<<candidate_edge.v_start<<"to"<<candidate_edge.v_end<<endl;
+
+    //use BFS to check if this edge will cause a loop (use this edge to loop back to itself(edge.v_start) not DFS has a loop)
+     for (const auto& candidate_edge : removed_edges){
+    //     //cout<<"candidate edge change "<<endl;
+    //     //cout<<"if last edge loop back to it self"<<loop_back_to_this_root<<endl;
+    //     //initialize visited
+    //     visited.resize(n_numof_vertax);
+    //     for (int i = 0; i < visited.size(); i++) {
+    //         visited[i] = false;
+    //     }
+    //     //initialize visited
+
+    //     // from edge.v_start start to DFS
+    //     int root = candidate_edge.v_start;
+    //     // if from edge.v_start start to DFS and loop_back_to_this_root than this edge remain in output
+    //     loop_back_to_this_root = false;
+    //     //cout<<"become  flase ~~ "<<loop_back_to_this_root<<endl;
+    //     DFS_visit(root, adj, root);
+    //     //cout<<"where you go in to if "<<loop_back_to_this_root<<endl;
+    //     if(!loop_back_to_this_root ){ //this edge doesn't metter
+    //         //cout<<"this edge doesnt metter from"<<candidate_edge.v_start<<"to"<<candidate_edge.v_end<<endl;
+    //         //cout<<"!!!!!!!"<<candidate_edge.weight<<endl;
+    //         //if(candidate_edge.weight>0){
+    //             removed_weight_sum -= candidate_edge.weight;
+    //             // remove this candidate edge from removed edge
+    //             auto it = remove_if(removed_edges.begin(), removed_edges.end(), 
+    //                                 [&candidate_edge](const edge& e) {
+    //                                     return e.v_start == candidate_edge.v_start && e.v_end == candidate_edge.v_end;
+    //                                 });
+    //             removed_edges.erase(it, removed_edges.end());
+    //         //} 
+    //     }
+    //     else{ // if loop back than have to remove it from adj list
+    //         adj[candidate_edge.v_start].erase(remove(adj[candidate_edge.v_start].begin(), adj[candidate_edge.v_start].end(), candidate_edge.v_end), adj[candidate_edge.v_start].end());
+    //     }
+
+
+    // }
+
+    //add adjacency list
+        adj[candidate_edge.v_start].push_back(candidate_edge.v_end);
+        //remained_edges.push_back(removed_edges[i]);
+        //check if cycle exist
+        if (BFS(candidate_edge.v_start, n_numof_vertax, adj) == true)
+        //remove testing edges
+        {
+            //cout << "fuck" << endl;
+            //捨棄那個edge
+            // remained_edges.pop_back();
+            //移除adjlist
+            adj[candidate_edge.v_start].pop_back();
+        }
+        //keep testing edges
+        else
+        {
             removed_weight_sum -= candidate_edge.weight;
-          // remove this candidate edge from removed edge
-            auto it = remove_if(removed_edges.begin(), removed_edges.end(), 
-                                [&candidate_edge](const edge& e) {
-                                    return e.v_start == candidate_edge.v_start && e.v_end == candidate_edge.v_end;
-                                });
-
-            removed_edges.erase(it, removed_edges.end());
+                // remove this candidate edge from removed edge
+                auto it = remove_if(removed_edges.begin(), removed_edges.end(), 
+                                    [&candidate_edge](const edge& e) {
+                                        return e.v_start == candidate_edge.v_start && e.v_end == candidate_edge.v_end;
+                                    });
+                removed_edges.erase(it, removed_edges.end());
+            //} 
         }
-
-
     }
 
 }

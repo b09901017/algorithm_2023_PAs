@@ -1,0 +1,21 @@
+README for Graph Processing Program
+Overview
+
+This C++ program efficiently processes graphs to determine their maximum spanning trees and connectivity. It specifically handles two types of graphs: undirected (marked with 'u') and directed (marked with 'd').
+Features
+
+    Kruskal's Algorithm: Implemented for undirected graphs to find the maximum spanning tree. Edges are sorted by weight, and a union-find data structure is utilized to detect cycles.
+    Directed Graph Processing: For directed graphs, the program iteratively removes edges, using DFS to verify if the graph remains connected. This process determines the essential edges for maintaining graph connectivity.
+    Input and Output: The program reads graph data from a specified input file and outputs the results, including the weight sum of removed edges, to an output file.
+
+Usage
+
+Compile and run the program with input and output file arguments. Use the included checker tool to validate the results.
+
+
+./bin/cb inputs/public_case_n.in outputs/case_n
+checker/pa3_checker inputs/public_case_n.in outputs/case_n
+
+Note
+
+Careful attention is paid to memory management and performance, ensuring efficient handling of large graphs. The program is a practical application of advanced graph theory concepts in C++.
