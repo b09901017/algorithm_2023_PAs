@@ -22,6 +22,7 @@ struct edge
 };
 vector <edge> edges;
 vector<bool> visited;
+bool loop_back_to_this_root = false;
 //output varible
 int removed_weight_sum = 0;
 vector <edge> removed_edges;
@@ -39,7 +40,7 @@ bool compareByWeight(const edge& a, const edge& b){
 
 // ************** Union By Rank O(m) ********************
 vector<int> Panents ; vector<int> Ranks;
-void Make_SET(){ //initialize
+void Make_SET(int n_numof_vertax){ //initialize
     Panents.resize(n_numof_vertax); Ranks.resize(n_numof_vertax); //contro size
     for (int i=0;i<n_numof_vertax;i++){Panents[i]=i ; Ranks[i]=0;}
 }
@@ -53,6 +54,7 @@ void LINK(int group1, int group2){
         Panents[group2] = group1;
     else{
         Panents[group1] = group2;     // otherwise 1 link to 2
+        //cout<<group2<<"!!!!!"<<endl;
         if (Ranks[group1] == Ranks[group2]) //moreover if 1==2 expect link 1 to 2 also 2.rank+1 
             Ranks[group2]++;
     }   
@@ -69,7 +71,7 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
     std::sort(edges.begin(), edges.end(), [](const edge& a, const edge& b) {
         return a.weight > b.weight;
     });
-    // check the result
+    //check the result
     // for(const auto& edge : edges) {
     //     std::cout << "Edge from " << edge.v_start << " to " << edge.v_end << " with weight " << edge.weight << std::endl;
     // }
@@ -80,7 +82,7 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
     // for(int i = 0; i < n_numof_vertax; ++i) {
     //     root[i] = i;  // 初始時，每個頂點都是自己的根
     // }
-    Make_SET();
+    Make_SET(n_numof_vertax);
     // ************** setting root for each ( use makeSET just fine ) ********************
 
     // ************** greddly go though v-1個 vertex (without chossen int mst than must remove?) ********************
@@ -88,14 +90,16 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
 
         int root_start = Find_SET(edge.v_start);
         int root_end = Find_SET(edge.v_end);
-
+        //cout<<edge.v_start <<" belong to "<<root_start<<" , "<<edge.v_end << " belong to "<<root_end<<endl;
         if (root_start!=root_end){ // if not in the same group than union
-            UNION(root_start,root_end);// union
+            UNION(edge.v_start,edge.v_end);// union
+            //cout<<"connect "<<edge.v_start<<" to "<<edge.v_end<<endl;
         }
         else{ // in the same group than there is a cycle than get it out print
             removed_edges.push_back({edge.v_start,edge.v_end,edge.weight});
             removed_weight_sum += edge.weight;
         }
+
     }
     // ************** greddly go though v-1個 vertex (without chossen int mst than must remove?) ********************
 
@@ -104,19 +108,29 @@ void use_Kruskal_u_maxST_to_print_remove (vector <edge> &edges, int n_numof_vert
 
 
 // ************** 1. remove edge one by one (greddyly) 2. check if that is OK ? 3. if ok than store in out put if not than put it back********************
-void DFS_visit(int node, vector<int> adj[], int root, bool& loop_back_to_this_root){
+void DFS_visit(int node, vector<int> adj[], int root){
     visited[node] = true;
 
     for(int v : adj[node]){
-        if (v==root) {
-            loop_back_to_this_root = true;
-            return;
-        }
+        // debug
+        // cout<<"vertex : " <<node<<"'s nigber are : ";
+        // for(int v : adj[node]){
+        //     cout<<v<<", ";
+        // }
+        // cout<<endl;
+        // debug
+        
         if(!visited[v]){ // if this nigber is not vised 
             //cout<<"visit : "<< v <<endl;
-            DFS_visit(v, adj, root, loop_back_to_this_root);
+            DFS_visit(v, adj, root);
         }
+        if (v==root) {
+                loop_back_to_this_root = true;
+                //cout<<"start being true ~~ "<<loop_back_to_this_root<<endl;
+                return;
+            }
     }
+    //cout<<"check point~~ "<<root<<endl;
 }
     // only those who pass the u_remove function is possible for d_remove
 void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> adj[], int n_numof_vertax, int m_numof_edge){
@@ -129,9 +143,11 @@ void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> a
     //use DFS to check if this edge will cause a loop (use this edge to loop back to itself(edge.v_start) not DFS has a loop)
     
     for (const auto& candidate_edge : removed_edges){
+        //cout<<"candidate edge change "<<endl;
+        //cout<<"if last edge loop back to it self"<<loop_back_to_this_root<<endl;
         //initialize visited
         visited.resize(n_numof_vertax);
-        for (int i = 0; i < visited.size(); ++i) {
+        for (int i = 0; i < visited.size(); i++) {
             visited[i] = false;
         }
         //initialize visited
@@ -139,10 +155,12 @@ void d_print_removed_edge_for_directed_graph(vector <edge> &edges, vector<int> a
         // from edge.v_start start to DFS
         int root = candidate_edge.v_start;
         // if from edge.v_start start to DFS and loop_back_to_this_root than this edge remain in output
-        bool loop_back_to_this_root = false;
-        DFS_visit(root, adj, root, loop_back_to_this_root);
-
-        if(!loop_back_to_this_root){
+        loop_back_to_this_root = false;
+        //cout<<"become  flase ~~ "<<loop_back_to_this_root<<endl;
+        DFS_visit(root, adj, root);
+        //cout<<"where you go in to if "<<loop_back_to_this_root<<endl;
+        if(!loop_back_to_this_root){ 
+            cout<<"this edge doesnt metter from"<<candidate_edge.v_start<<"to"<<candidate_edge.v_end<<endl;
             removed_weight_sum -= candidate_edge.weight;
           // remove this candidate edge from removed edge
             auto it = remove_if(removed_edges.begin(), removed_edges.end(), 
@@ -229,6 +247,7 @@ int main(int argc, char* argv[])
         use_Kruskal_u_maxST_to_print_remove (edges, n_numof_vertax, m_numof_edge);
     }
     else if(type=='d'){
+        cout<<"using_d"<<endl;
         d_print_removed_edge_for_directed_graph(edges, adj, n_numof_vertax, m_numof_edge);
     }
     else{
